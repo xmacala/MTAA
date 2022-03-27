@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="9cbb4c6e-0eed-4c88-ac00-affee741fa08" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/MTAA_backend.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mtaa_backend/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mtaa_backend/.idea/.name" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mtaa_backend/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mtaa_backend/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mtaa_backend/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mtaa_backend/.idea/mtaa_backend.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mtaa_backend/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mtaa_backend/Models_Controller/adress_controller.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mtaa_backend/Models_Controller/message_controller.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mtaa_backend/Models_Controller/post_controller.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mtaa_backend/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Zadanie 2/Models_Controller/student_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/mtaa_backend/Models_Controller/student_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Zadanie 2/Models_Controller/user_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/mtaa_backend/Models_Controller/user_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Zadanie 2/app.py" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="26xlFJW6ckeDfQD8Uj7xgRFnrbF" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9cbb4c6e-0eed-4c88-ac00-affee741fa08" name="Changes" comment="" />
+      <created>1648373013730</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1648373013730</updated>
+      <workItem from="1648373015647" duration="35000" />
+      <workItem from="1648374203203" duration="384000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
