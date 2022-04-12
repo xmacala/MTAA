@@ -1,7 +1,9 @@
+import jwt
+from functools import wraps
 import datetime
 from enum import unique
 from fileinput import filename
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, make_response
 from flask_sqlalchemy import SQLAlchemy, Model
 from flask_marshmallow import Marshmallow, Schema
 from Models_Controller import adress_controller as ac, message_controller as mc, student_controller as sc, user_controller as uc, post_controller as pc
@@ -9,11 +11,26 @@ from Models_Controller import adress_controller as ac, message_controller as mc,
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/studentska_zoznamka'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'thisissecretkey'
 
 
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
+# Authorization-------------------------------------------------
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.args.get('token')
+        if not token:
+            return jsonify({'response' : 'Token is missing!'}), 403
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+        except:
+            return jsonify({'response' : 'Token is invalid!'}), 403
+        return f(*args, **kwargs)
+    return decorated
 
 # Users section-------------------------------------------------
 class Users(db.Model):
@@ -40,12 +57,12 @@ users_schema = UserSchema(many=True)
 
 @app.route('/user_create', methods=['POST'])
 def user_create():
-    return uc.create_user(Users,user_schema,db)
+    return uc.create_user(Users,user_schema,db,app)
 
 
 @app.route('/user_login', methods=['GET'])        #toto fixnut / done
 def user_login():
-    return uc.login_user(Users, db)
+    return uc.login_user(Users, db, app)
 
 
 @app.route('/user_get/<id>/', methods=['GET'])
@@ -54,11 +71,13 @@ def user_get(id):
 
 
 @app.route('/user_update/<id>/', methods=['PUT'])
+@token_required
 def users_update(id):
     return uc.update_user(Users, db, user_schema, id)
 
 
 @app.route('/user_delete/<id>/', methods=['DELETE'])
+@token_required
 def users_delete(id):
     return uc.delete_user(Users, Students, Adress, db, user_schema, id)
 
@@ -100,6 +119,7 @@ student_schema = StudentsSchema()
 
 
 @app.route('/student_create/<user_id>/', methods = ['POST'])
+@token_required
 def student_add(user_id):
     return sc.create_student(Students ,db,user_id)
 
@@ -110,10 +130,12 @@ def student_get(user_id):
 
 
 @app.route('/student_data_update/<user_id>/', methods = ['PUT'])
+@token_required
 def student_data_update(user_id):
     return sc.update_data_student(Students, db, user_id)
     
 @app.route('/student_photo_update/<user_id>/', methods = ['PUT'])
+@token_required
 def student_photo_update(user_id):
     return sc.update_photo_student(Students, db, user_id)
 
@@ -144,6 +166,7 @@ adress_schema = AdressSchema()
 
 
 @app.route('/address_create/<user_id>/', methods=['POST'])
+@token_required
 def address_add(user_id):
     return ac.create_address(Adress, adress_schema, db, user_id)
 
@@ -154,6 +177,7 @@ def address_get(user_id):
 
 
 @app.route('/address_update/<user_id>/', methods=['PUT'])
+@token_required
 def address_update(user_id):
     return ac.update_address(Adress, db, adress_schema, user_id)
 
@@ -203,6 +227,7 @@ message_file_schema = MessageFileSchema(many=True)
 #Text part---------------
 
 @app.route('/message_text_create/<from_id>/<to_id>/', methods = ['POST'])
+@token_required
 def message_text_add(from_id, to_id):
     return mc.create_message_text(MessageText, db, from_id, to_id)
 
@@ -213,12 +238,14 @@ def message_text_get(from_id, to_id):
 
 
 @app.route('/message_text_update/<id>/', methods=['PUT'])
+@token_required
 def message_text_update(id):
     return mc.update_message_text(MessageText, db, id)
 
 #File part----------
 
 @app.route('/message_file_create/<from_id>/<to_id>/', methods = ['POST'])
+@token_required
 def message_file_add(from_id, to_id):
     return mc.create_message_file(MessageFile, db, from_id, to_id)
 
@@ -229,6 +256,7 @@ def message_file_get(from_id, to_id):
 
 
 @app.route('/message_file_update/<id>/', methods=['PUT'])
+@token_required
 def message_file_update(id):
     return mc.update_message_file(MessageFile, db, id)
 
@@ -257,6 +285,7 @@ posts_schema = PostSchema(many=True)
 
 
 @app.route('/post_create/<user_id>/', methods=['POST'])
+@token_required
 def post_create(user_id):
     return pc.create_post(Post, db, user_id)
 
@@ -272,16 +301,19 @@ def posts_get(owner_id):
 
 
 @app.route('/post_liked/<id>/', methods=['PUT'])
+@token_required
 def post_liked(id):
     return pc.post_liked(Post, db, id)
 
 
 @app.route('/post_update/<id>/', methods=['PUT'])
+@token_required
 def post_update(id):
     return pc.post_update(Post, db, id)
 
 
 @app.route('/post_delete/<id>/', methods=['DELETE'])
+@token_required
 def delete_post(id):
     return pc.delete_post(Post, db, id)
 

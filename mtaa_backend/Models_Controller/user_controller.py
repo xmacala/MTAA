@@ -1,21 +1,26 @@
 from flask import Flask, jsonify, request, session, Response
+import jwt
+import datetime
 
 
-def create_user(users, user_schema, db):
-    try:
+def create_user(users, user_schema, db, app):
+    #try:
+        app.config['SECRET_KEY'] = 'thisissecretkey'
         id = request.json['id']
         username = request.json['username']
         email = request.json['email']
         password = request.json['password']
+        token = jwt.encode({ 'user' : username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, app.config['SECRET_KEY'])
         user = users(id, username, email, password)
         db.session.add(user)    
         db.session.commit()
-        return Response("{'response':'Succesfull operation'}", status=200, mimetype='application/json')
-    except:
-        return Response("{'response':'Invalid input'}", status=400, mimetype='application/json') 
+        return jsonify({'token' : token}), 200
+    #except:
+        #return Response("{'response':'Invalid input'}", status=400, mimetype='application/json') 
 
 
-def login_user(users, db):
+def login_user(users, db, app):
+    app.config['SECRET_KEY'] = 'thisissecretkey'
     username = request.json['username']
     password = request.json['password']
     exists_name = db.session.query(
@@ -25,7 +30,8 @@ def login_user(users, db):
     db.session.query(users).filter_by(password=password).exists()
     ).scalar()
     if exists_name and exists_pass:
-        return Response("{'response':'Succesfull login'}", status=200, mimetype='application/json') 
+        token = jwt.encode({ 'user' : username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, app.config['SECRET_KEY'])
+        return jsonify({'token' : token}), 200
     elif exists_name:
         return Response("{'response':'Invalid password'}", status=400, mimetype='application/json')
     else:
