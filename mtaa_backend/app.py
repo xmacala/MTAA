@@ -23,10 +23,11 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = request.args.get('token')
+        print(token)
         if not token:
             return jsonify({'response' : 'Token is missing!'}), 403
         try:
-            data = jwt.decode(token, app.config['SECRET_KEY'])
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms="HS256")
         except:
             return jsonify({'response' : 'Token is invalid!'}), 403
         return f(*args, **kwargs)
@@ -57,10 +58,10 @@ users_schema = UserSchema(many=True)
 
 @app.route('/user_create', methods=['POST'])
 def user_create():
-    return uc.create_user(Users,user_schema,db,app)
+    return uc.create_user(Users,db,app)
 
 
-@app.route('/user_login', methods=['GET'])        #toto fixnut / done
+@app.route('/user_login', methods=['POST'])        #toto fixnut / done
 def user_login():
     return uc.login_user(Users, db, app)
 
@@ -79,7 +80,7 @@ def users_update(id):
 @app.route('/user_delete/<id>/', methods=['DELETE'])
 @token_required
 def users_delete(id):
-    return uc.delete_user(Users, Students, Adress, db, user_schema, id)
+    return uc.delete_user(Users, Students, Adress, MessageFile, MessageText, Post, db, user_schema, id)
 
 
 # Students section------------------------------------------------
