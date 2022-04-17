@@ -7,11 +7,14 @@ from flask import Flask, jsonify, request, make_response
 from flask_sqlalchemy import SQLAlchemy, Model
 from flask_marshmallow import Marshmallow, Schema
 from Models_Controller import adress_controller as ac, message_controller as mc, student_controller as sc, user_controller as uc, post_controller as pc
+from flask_cors import CORS
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/studentska_zoznamka'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'thisissecretkey'
+CORS(app)
 
 
 db = SQLAlchemy(app)
