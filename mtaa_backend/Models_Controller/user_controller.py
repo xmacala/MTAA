@@ -19,8 +19,8 @@ def create_user(users, db, app):
         exists_email = db.session.query(
         db.session.query(users).filter_by(email=email).exists()
         ).scalar()
-        if exists_name and exists_id and exists_email:
-            token = jwt.encode({ 'user' : username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, app.config['SECRET_KEY'], algorithms="HS256")
+        if not exists_name and not exists_id and not exists_email:
+            token = jwt.encode({ 'user' : username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, app.config['SECRET_KEY'])
             user = users(id, username, email, password)
             db.session.add(user)    
             db.session.commit()
@@ -41,11 +41,12 @@ def login_user(users, db, app):
     exists_pass = db.session.query(
     db.session.query(users).filter_by(password=password).exists()
     ).scalar()
+    user = users.query.filter_by(username=username).first()
     if exists_name and exists_pass:
         token = jwt.encode({ 'user' : username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, app.config['SECRET_KEY'])
-        return jsonify({'token' : token}), 200
+        return jsonify({'token' : token, 'id':user.id}), 200
     elif exists_name:
-        return Response("{'response':'Invalid password'}", status=400, mimetype='application/json')
+        return jsonify({'response' : 'Invalid password'}), 400
     else:
         return Response("{'response':'User not found'}", status=404, mimetype='application/json') 
     
