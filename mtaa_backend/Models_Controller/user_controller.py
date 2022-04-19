@@ -11,27 +11,28 @@ def create_user(users, db, app):
         email = request.json['email']
         password = request.json['password']
         exists_name = db.session.query(
-        db.session.query(users).filter_by(username=username).exists()
+            db.session.query(users).filter_by(username=username).exists()
         ).scalar()
         exists_id = db.session.query(
-        db.session.query(users).filter_by(id=id).exists()
+            db.session.query(users).filter_by(id=id).exists()
         ).scalar()
         exists_email = db.session.query(
-        db.session.query(users).filter_by(email=email).exists()
+            db.session.query(users).filter_by(email=email).exists()
         ).scalar()
         if not exists_name and not exists_id and not exists_email:
-            token = jwt.encode({ 'user' : username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, app.config['SECRET_KEY'])
+            token = jwt.encode({'user': username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)},
+                               app.config['SECRET_KEY'])
             user = users(id, username, email, password)
-            db.session.add(user)    
+            db.session.add(user)
             db.session.commit()
-            return jsonify({'token' : token}), 200
+            return jsonify({'response': 'User successfully created', 'token': token}), 200
         else:
-            return Response("{'response':'User is already registered'}", status=400, mimetype='application/json')
+            return jsonify({'response': 'User is already registered'}), 409
     except:
-        return Response("{'response':'Invalid input'}", status=400, mimetype='application/json') 
+        return jsonify({'response': 'Invalid input'}), 400
 
 
-def login_user(users, db, app):
+def login_user(users, students, address, db, app):
     app.config['SECRET_KEY'] = 'thisissecretkey'
     username = request.json['username']
     password = request.json['password']
@@ -43,26 +44,36 @@ def login_user(users, db, app):
     ).scalar()
     user = users.query.filter_by(username=username).first()
     if exists_name and exists_pass:
+        student = students.query.filter_by(user_id=user.id).first()
+        adr = address.query.filter_by(user_id=user.id).first()
+        if student is not None:
+            is_student = True
+        else:
+            is_student = False
+        if adr is not None:
+            has_address = True
+        else:
+            has_address = False
         token = jwt.encode({ 'user' : username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, app.config['SECRET_KEY'])
-        return jsonify({'token' : token, 'id':user.id}), 200
+        return jsonify({'response': 'Login successful', 'token': token, 'id': user.id, 'isStudent': is_student, 'hasAddress': has_address}), 200
     elif exists_name:
-        return jsonify({'response' : 'Invalid password'}), 400
+        return jsonify({'response': 'Invalid password'}), 400
     else:
-        return Response("{'response':'User not found'}", status=404, mimetype='application/json') 
-    
+        return jsonify({'response': 'User not found'}), 404
+
 
 def get_user_by_id(users, user_schema, id):
     try:
         user = users.query.get(id)
         if user is not None:
-            return user_schema.jsonify(user)
+            return user_schema.jsonify(user), 200
         else:
-            return Response("{'response':'User not found'}", status=404, mimetype='application/json') 
+            return jsonify({'response': 'User not found'}), 404
     except:
-        return Response("{'response':'Invalid ID supplied'}", status=400, mimetype='application/json') 
+        return jsonify({'response': 'Invalid ID supplied'}), 400
 
 
-def update_user(users, db, user_schema, id):
+def update_user(users, db, id):
     user = users.query.get(id)
     if user is not None:
         try:
@@ -73,34 +84,27 @@ def update_user(users, db, user_schema, id):
             user.email = email
             user.password = password
             db.session.commit()
-            return Response("{'response':'Succesfull operation'}", status=200, mimetype='application/json') 
+            return jsonify({'response': 'User data successfully updated'}), 200
         except:
-            return Response("{'response':'Invalid input'}", status=400, mimetype='application/json') 
+            return jsonify({'response': 'Invalid input'}), 400
     else:
-        return Response("{'response':'User not found'}", status=404, mimetype='application/json') 
+        return jsonify({'response': 'User not found'}), 404
 
 
-def delete_user(users, students, adress, msg_file, msg_text, post, db, user_schema, id):
+def delete_user(users, students, adress, msg, post, db, id):
     user = users.query.get(id)
     if user is not None:
         student = students.query.filter_by(user_id=id).first()
         adr = adress.query.filter_by(user_id=id).first()
-        file = msg_file.query.filter_by(from_id=id).all()
-        text = msg_text.query.filter_by(from_id=id).all()
-        post = post.query.filter_by(owner_id=id).all()
+        msg.query.filter(msg.from_id == id).delete()
+        post.query.filter(post.owner_id == id).delete()
         if student is not None:
             db.session.delete(student)
         if adr is not None:
             db.session.delete(adr)
-        if file is not None:
-            db.session.delete(file)
-        if text is not None:
-            db.session.delete(text)
-        if post is not None:
-            db.session.delete(post)
         db.session.delete(user)
         db.session.commit()
-        return Response("{'response':'Succesfull operation'}", status=200, mimetype='application/json')   
+        return jsonify({'response': 'User successfully deleted'}), 200
     else:
-        return Response("{'response':'User not found'}", status=404, mimetype='application/json')   
+        return jsonify({'response': 'User not found'}), 404
 

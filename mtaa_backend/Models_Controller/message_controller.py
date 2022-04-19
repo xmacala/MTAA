@@ -1,80 +1,53 @@
 from flask import Flask, jsonify, request, Response
-import os
 
 
-def create_message_text(msg_text, db, from_id, to_id):
+def create_message(msg, db, from_id, to_id):
     try:
+        photo = request.json['file']
         content = request.json['content']
-        message = msg_text(content, from_id, to_id)
+        message = msg(content, photo.encode('utf-8'), from_id, to_id)
         db.session.add(message)
         db.session.commit()
-        return Response("{'response':'Successfull operation'}", status=200, mimetype='application/json') 
+        return jsonify({'response': 'Message successfully sent'}), 200
     except:
-        return Response("{'response':'Invalid input'}", status=400, mimetype='application/json') 
+        return jsonify({'response': 'Invalid input'}), 400
 
 
-def get_message_text(msg_text, message_schema, from_id, to_id):
+def get_message(msg, message_schema, from_id, to_id):
     try:
-        message = msg_text.query.filter_by(
-            from_id = from_id,
-            to_id = to_id).all()
+        message = msg.query.filter_by(from_id=from_id, to_id=to_id).all()
         if message:
-            return message_schema.jsonify(message)
+            return message_schema.jsonify(message), 200
         else:
-            return Response("{'response':'Message not found'}", status=404, mimetype='application/json') 
+            return jsonify({'response': 'Message not found'}), 404
     except:
-        return Response("{'response':'Invalid ID supplied'}", status=400, mimetype='application/json') 
+        return jsonify({'response': 'Something went wrong'}), 400
 
 
-def update_message_text(msg_text, db, id):
+def update_message(msg, db, id):
     try:
-        message = msg_text.query.get(id)
+        message = msg.query.get(id)
         if message:
+            attachment = request.json['file']
             content = request.json['content']
             message.content = content
+            message.attachment = attachment.encode('utf-8')
             db.session.commit()
-            return Response("{'response':'Successfull operation'}", status=200, mimetype='application/json') 
+            return jsonify({'response', 'Message successfully updated'}), 200
         else:
-            return Response("{'response':'Message not found'}", status=404, mimetype='application/json') 
+            return jsonify({'response': 'Message not found'}), 404
     except:
-        return Response("{'response':'Invalid ID suplied'}", status=400, mimetype='application/json') 
+        return jsonify({'response': 'Something went wrong'}), 400
 
 
-def create_message_file(msg_file, db, from_id, to_id):
+def delete_message(msg, db, id):
     try:
-        image = request.files['file']
-        photo_name = os.path.abspath(image.filename)
-        message = msg_file(photo_name, image.read(), from_id, to_id)
-        db.session.add(message)
-        db.session.commit()
-        return Response("{'response':'Successfull operation'}", status=200, mimetype='application/json') 
-    except:
-        return Response("{'response':'Invalid input'}", status=400, mimetype='application/json') 
-
-
-def get_message_file(msg_file, message_schema, from_id, to_id):
-    try:
-        message = msg_file.query.filter_by(
-            from_id = from_id,
-            to_id=to_id).all()
+        message = msg.query.get(id)
         if message:
-            return message_schema.jsonify(message)
-        else:
-            return Response("{'response':'Message not found'}", status=404, mimetype='application/json') 
-    except:
-        return Response("{'response':'Invalid ID supplied'}", status=400, mimetype='application/json') 
-
-
-def update_message_file(msg_file, db, id):
-    try:
-        message = msg_file.query.get(id)
-        if message:
-            file = request.files['file']
-            message.filename = file.filename
-            message.attachment = file.read()
+            db.session.delete(message)
             db.session.commit()
-            return Response("{'response':'Successfull operation'}", status=200, mimetype='application/json') 
+            return jsonify({'response': 'Message successfully deleted'}), 200
         else:
-            return Response("{'response':'Message not found'}", status=404, mimetype='application/json') 
+            return jsonify({'response': 'Message not found'}), 404
     except:
-        return Response("{'response':'Invalid ID suplied'}", status=400, mimetype='application/json') 
+        return jsonify({'response': 'Something went wrong'}), 400
