@@ -343,7 +343,8 @@ def delete_post(id):
     return pc.delete_post(Post, db, id)
 
 
+# TODO: have to change ip address depending on where we are
 # Main------------------------------------------------------------
 if __name__ == "__main__":
-    app.run(host='192.168.0.104', port=3000, debug=True)
+    app.run(host='10.10.44.120', port=3000, debug=True)
 
