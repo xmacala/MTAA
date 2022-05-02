@@ -1,14 +1,18 @@
+import base64
+import requests
+
 import jwt
 from functools import wraps
 import datetime
-from enum import unique
-from flask import Flask, jsonify, request, make_response
+from flask import Flask, jsonify, request, make_response, render_template
 from flask_sqlalchemy import SQLAlchemy, Model
 from flask_marshmallow import Marshmallow, Schema
-from Models_Controller import address_controller as ac, message_controller as mc, student_controller as sc, user_controller as uc, post_controller as pc
+from Models_Controller import address_controller as ac, message_controller as mc, student_controller as sc, \
+    user_controller as uc, post_controller as pc
 from Models_Controller import conversations_controller as cc
 from flask_cors import CORS
-
+from flask import Flask
+from flask_socketio import SocketIO, send, join_room, leave_room, emit
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://adam:''@localhost/studentska_zoznamka'
@@ -16,13 +20,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'thisissecretkey'
 CORS(app)
 
-
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
+socketio = SocketIO(app, logger=True, cors_allowed_origins='*', max_http_buffer_size=1000000000)
+
+
 # Authorization-------------------------------------------------
-
-
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -35,6 +39,7 @@ def token_required(f):
         except:
             return jsonify({'response': 'Token is invalid!'}), 403
         return f(*args, **kwargs)
+
     return decorated
 
 
@@ -63,7 +68,7 @@ users_schema = UserSchema(many=True)
 
 @app.route('/user/create', methods=['POST'])
 def user_create():
-    return uc.create_user(Users,db,app)
+    return uc.create_user(Users, db, app)
 
 
 @app.route('/user/login', methods=['POST'])
@@ -91,7 +96,7 @@ def user_delete(id):
 
 # Students section------------------------------------------------
 class Students(db.Model):
-    id = db.Column(db.Integer, primary_key = True )
+    id = db.Column(db.Integer, primary_key=True)
     fullname = db.Column(db.String())
     phonenumber = db.Column(db.String())
     contacts = db.Column(db.String())
@@ -105,7 +110,8 @@ class Students(db.Model):
     file = db.Column(db.LargeBinary)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    def __init__(self, fullname, phonenumber, contacts, height, weight, hobby, haircolor, age, bodytype, interests, file, user_id):
+    def __init__(self, fullname, phonenumber, contacts, height, weight, hobby, haircolor, age, bodytype, interests,
+                 file, user_id):
         self.fullname = fullname
         self.phonenumber = phonenumber
         self.contacts = contacts
@@ -122,7 +128,9 @@ class Students(db.Model):
 
 class StudentsSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'fullname', 'phonenumber', 'contacts', 'height', 'weight', 'hobby', 'haircolor', 'age', 'bodytype', 'interests', 'file', 'user_id')
+        fields = (
+        'id', 'fullname', 'phonenumber', 'contacts', 'height', 'weight', 'hobby', 'haircolor', 'age', 'bodytype',
+        'interests', 'file', 'user_id')
 
 
 student_schema = StudentsSchema()
@@ -343,8 +351,36 @@ def delete_post(id):
     return pc.delete_post(Post, db, id)
 
 
-# TODO: have to change ip address depending on where we are
-# Main------------------------------------------------------------
-if __name__ == "__main__":
-    app.run(host='10.10.44.120', port=3000, debug=True)
+@socketio.on('connect')
+def test_connect(auth):
+    emit('my response', {'data': 'Connected'})
 
+
+@socketio.on('send_message')
+def handle_message(msg):
+    photo = None
+    if msg['attachment']:
+        photo = msg['attachment'].encode('utf-8')
+    content = msg['content']
+    from_id = msg['from_id']
+    to_id = msg['to_id']
+    message = Messages(content, photo, from_id, to_id)
+    db.session.add(message)
+    db.session.commit()
+    student = Students.query.filter_by(user_id=msg['from_id']).first()
+    msg['user'] = student.fullname
+    emit('send_message', msg, broadcast=True, json=True)
+
+
+@socketio.on('delete_message')
+def handle_message(msg):
+    id = msg['id']
+    message = Messages.query.get(id)
+    if message:
+        db.session.delete(message)
+        db.session.commit()
+    emit('delete_message', msg, broadcast=True, json=True)
+
+
+if __name__ == "__main__":
+    socketio.run(app, host='192.168.0.104', port=3000, debug=True)

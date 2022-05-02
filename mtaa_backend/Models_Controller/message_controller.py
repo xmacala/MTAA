@@ -15,9 +15,12 @@ def create_message(msg, db, from_id, to_id):
 
 def get_message(msg, message_schema, from_id, to_id):
     try:
-        message = msg.query.filter_by(from_id=from_id, to_id=to_id).all()
-        if message:
-            return message_schema.jsonify(message), 200
+        messages_1 = msg.query.filter_by(from_id=from_id, to_id=to_id).all()
+        messages_2 = msg.query.filter_by(from_id=to_id, to_id=from_id).all()
+        all_messages = messages_1 + messages_2
+        if all_messages:
+            newlist = sorted(all_messages, key=lambda x: x.sent_at)
+            return message_schema.jsonify(newlist), 200
         else:
             return jsonify({'response': 'Message not found'}), 404
     except:
